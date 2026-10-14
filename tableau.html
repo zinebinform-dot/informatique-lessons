@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ألعاب درس الجدول في Word</title>
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --pink-main: #FF80AB;
+            --pink-light: #FFE4EC;
+            --blue-main: #29B6F6;
+            --blue-light: #E1F5FE;
+            --bg-yellow: #FFFDE7;
+            --word-blue: #2B579A;
+            --text-dark: #2C3E50;
+            --card-bg: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-yellow);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 30px;
+        }
+
+        /* Top Header */
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, #ffffff 0%, var(--pink-light) 100%);
+            border-bottom: 4px solid var(--pink-main);
+            padding: 15px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-info h1 {
+            color: var(--word-blue);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-info h2 {
+            color: #E91E63;
+            font-size: 1.1rem;
+            font-weight: normal;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .score-badge {
+            background-color: #FFF;
+            border: 2px solid #FFD54F;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #F57F17;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .btn-tool {
+            background: #FFF;
+            border: 2px solid var(--blue-main);
+            color: var(--blue-main);
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-tool:hover {
+            background: var(--blue-main);
+            color: #FFF;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 2px solid var(--pink-main);
+            color: var(--pink-main);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--pink-main);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 128, 171, 0.4);
+        }
+
+        /* Container & Cards */
+        .main-container {
+            width: 95%;
+            max-width: 900px;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            border: 2px solid #FFE082;
+        }
+
+        .game-panel {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .game-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-title {
+            color: var(--word-blue);
+            border-right: 5px solid var(--pink-main);
+            padding-right: 12px;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        /* Universal Button */
+        .action-btn {
+            background: var(--pink-main);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(255, 128, 171, 0.3);
+            margin-top: 15px;
+        }
+
+        .action-btn:hover {
+            background: #FF4081;
+            transform: translateY(-2px);
+        }
+
+        /* Game 1: Quiz Correct Table */
+        .q-card {
+            background: var(--blue-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .q-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--word-blue);
+            margin-bottom: 15px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+        }
+
+        .option-card {
+            background: white;
+            border: 3px solid #B3E5FC;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .option-card:hover {
+            border-color: var(--pink-main);
+            transform: scale(1.02);
+        }
+
+        .option-card.correct {
+            border-color: #66BB6A;
+            background-color: #E8F5E9;
+        }
+
+        .option-card.wrong {
+            border-color: #EF5350;
+            background-color: #FFEBEE;
+        }
+
+        /* Mini Table Renderer */
+        .mini-table {
+            border-collapse: collapse;
+            margin: 10px auto;
+            background: white;
+        }
+
+        .mini-table td {
+            border: 2px solid var(--word-blue);
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        /* Game 2: Insert Table Interactive Modal */
+        .word-dialog {
+            background: #F0F0F0;
+            border: 2px solid #0078D7;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .word-dialog-header {
+            background: var(--word-blue);
+            color: white;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .word-dialog-body {
+            padding: 20px;
+            background: #F9F9F9;
+        }
+
+        .dialog-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #DDD;
+        }
+
+        .dialog-group label {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-counter {
+            background: #E0E0E0;
+            border: 1px solid #AAA;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-counter:hover {
+            background: #CCC;
+        }
+
+        .val-display {
+            font-weight: bold;
+            font-size: 1.1rem;
+            width: 30px;
+            text-align: center;
+            color: var(--word-blue);
+        }
+
+        .table-preview-container {
+            margin-top: 20px;
+            border: 2px dashed var(--blue-main);
+            padding: 15px;
+            border-radius: 10px;
+            background: white;
+            min-height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .rendered-table {
+            border-collapse: collapse;
+        }
+
+        .rendered-table td {
+            border: 2px solid var(--word-blue);
+            padding: 10px 15px;
+            background: var(--pink-light);
+            text-align: center;
+            color: var(--word-blue);
+            font-weight: bold;
+        }
+
+        /* Game 3: Resize Master */
+        .toolbar-sim {
+            background: #F3F3F3;
+            border: 1px solid #DDD;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tool-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-field label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--word-blue);
+        }
+
+        .tool-field input {
+            width: 70px;
+            padding: 6px;
+            border: 1px solid #29B6F6;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .resizable-table-wrapper {
+            border: 2px solid #DDD;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .dynamic-table {
+            border-collapse: collapse;
+            transition: all 0.2s ease;
+        }
+
+        .dynamic-table td {
+            border: 2px solid var(--word-blue);
+            background: #E1F5FE;
+            text-align: center;
+            vertical-align: middle;
+            color: #0277BD;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        /* Modal Settings */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-body {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-body h3 {
+            color: var(--word-blue);
+            margin-bottom: 15px;
+        }
+
+        .modal-body input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #DDD;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-info">
+            <h1 id="teacherDisplay">📘 الأستاذة: بلمبروك للمعلوماتية </h1>
+            <h2 id="schoolDisplay">🏫 متوسطة: الشهيدة منصري عائشة</h2>
+        </div>
+        <div class="header-controls">
+            <div class="score-badge">⭐ النقاط: <span id="scoreVal">0</span></div>
+            <button class="btn-tool" id="audioBtn" onclick="toggleAudio()" title="الصوت">🔊</button>
+            <button class="btn-tool" onclick="toggleFullscreen()" title="شاشة كاملة">🖥️</button>
+            <button class="btn-tool" onclick="openSettings()" title="الإعدادات">⚙️</button>
+        </div>
+    </header>
+
+    <!-- Tabs Nav -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('game1')">1️⃣ ما هو الجدول الصحيح؟</button>
+        <button class="tab-btn" onclick="switchTab('game2')">2️⃣ أدرج الجدول المطلوب</button>
+        <button class="tab-btn" onclick="switchTab('game3')">3️⃣ تغيير العرض والارتفاع</button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+
+        <!-- GAME 1: Identify Correct Table -->
+        <div id="game1" class="game-panel active">
+            <h2 class="game-title">تحدي: اختر الجدول المطابق للوصف الصحيح</h2>
+            <div id="quizContainer">
+                <!-- Dynamic Content Loaded via JS -->
+            </div>
+            <div style="text-align: center;">
+                <button class="action-btn" onclick="nextQuizQuestion()">السؤال التالي 🎯</button>
+            </div>
+        </div>
+
+        <!-- GAME 2: Insert Table Interactive Simulator -->
+        <div id="game2" class="game-panel">
+            <h2 class="game-title">تحدي: أدرج جدولاً في Word</h2>
+            <p style="margin-bottom: 15px; font-weight: bold; color: #D81B60;" id="game2Task">
+                المطلوب: قم بإدراج جدول يتكون من 4 أعمدة و 3 أسطر.
+            </p>
+
+            <!-- Word Dialog Simulation -->
+            <div class="word-dialog">
+                <div class="word-dialog-header">
+                    <span>إدراج جدول (Insérer un tableau)</span>
+                    <span style="font-size: 0.8rem;">Microsoft Word</span>
+                </div>
+                <div class="word-dialog-body">
+                    <div class="dialog-group">
+                        <label>عدد الأعمدة (Nombre de colonnes):</label>
+                        <div class="counter-controls">
+                            <button class="btn-counter" onclick="changeCols(-1)">-</button>
+                            <span class="val-display" id="colsVal">1</span>
+                            <button class="btn-counter" onclick="changeCols(1)">+</button>
+                        </div>
+                    </div>
+                    <div class="dialog-group">
+                        <label>عدد الأسطر (Nombre de lignes):</label>
+                        <div class="counter-controls">
+                            <button class="btn-counter" onclick="changeRows(-1)">-</button>
+                            <span class="val-display" id="rowsVal">1</span>
+                            <button class="btn-counter" onclick="changeRows(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Preview -->
+            <div class="table-preview-container">
+                <table class="rendered-table" id="previewTable"></table>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="action-btn" onclick="checkTableTask()">تأكيد الإجابة ✅</button>
+            </div>
+        </div>
+
+        <!-- GAME 3: Resize Column & Row -->
+        <div id="game3" class="game-panel">
+            <h2 class="game-title">تحدي: تغيير عرض العمود وارتفاع السطر (Layout / Disposition)</h2>
+            <p style="margin-bottom: 15px; font-weight: bold; color: #0277BD;" id="game3Task">
+                المطلوب: غيّر عرض العمود إلى 100px وارتفاع السطر إلى 60px ليظهر النص المكتمل!
+            </p>
+
+            <!-- Toolbar Simulation -->
+            <div class="toolbar-sim">
+                <div class="tool-field">
+                    <label>عرض العمود (Largeur):</label>
+                    <input type="number" id="colWidthInput" value="50" step="10" oninput="updateTableDimensions()">
+                    <span>px</span>
+                </div>
+                <div class="tool-field">
+                    <label>ارتفاع السطر (Hauteur):</label>
+                    <input type="number" id="rowHeightInput" value="30" step="10" oninput="updateTableDimensions()">
+                    <span>px</span>
+                </div>
+            </div>
+
+            <!-- Resizable Table Preview -->
+            <div class="resizable-table-wrapper">
+                <table class="dynamic-table" id="resizableTable">
+                    <tr>
+                        <td id="cellTarget">الجدول</td>
+                        <td>Word</td>
+                    </tr>
+                    <tr>
+                        <td>الخلية</td>
+                        <td>السطر</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="action-btn" onclick="checkResizeTask()">تأكيد الضبط 📏</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-body">
+            <h3>تعديل البيانات</h3>
+            <label style="font-size: 0.85rem;">اسم الأستاذة:</label>
+            <input type="text" id="teacherInput">
+            <label style="font-size: 0.85rem;">اسم المتوسطة:</label>
+            <input type="text" id="schoolInput">
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="action-btn" style="background:#777;" onclick="closeSettings()">إلغاء</button>
+                <button class="action-btn" onclick="saveSettings()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================
+           1. يمكنك تعديل معلوماتكِ الافتراضية هنا مباشرة
+           ========================================================= */
+        const DEFAULT_TEACHER = "بلمبروك للمعلوماتية";         // اكتب اسمك هنا
+        const DEFAULT_SCHOOL = "الشهيدة منصري عائشة";    // اكتب اسم المتوسطة هنا
+
+        // Load or fallback
+        let teacherName = localStorage.getItem('word_teacher_name') || DEFAULT_TEACHER;
+        let schoolName = localStorage.getItem('word_school_name') || DEFAULT_SCHOOL;
+        let score = parseInt(localStorage.getItem('word_game_score')) || 0;
+        let audioEnabled = true;
+
+        // Audio Context
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!audioEnabled) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('audioBtn').innerText = audioEnabled ? "🔊" : "🔇";
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // Init Display
+        function updateUIHeader() {
+            document.getElementById('teacherDisplay').innerText = "📘 الأستاذة: " + teacherName;
+            document.getElementById('schoolDisplay').innerText = "🏫 متوسطة: " + schoolName;
+            document.getElementById('scoreVal').innerText = score;
+        }
+        updateUIHeader();
+
+        function addScore(pts) {
+            score += pts;
+            localStorage.setItem('word_game_score', score);
+            document.getElementById('scoreVal').innerText = score;
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+        }
+
+        // Settings Modal Controls
+        function openSettings() {
+            document.getElementById('teacherInput').value = teacherName;
+            document.getElementById('schoolInput').value = schoolName;
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+        function saveSettings() {
+            teacherName = document.getElementById('teacherInput').value.trim() || DEFAULT_TEACHER;
+            schoolName = document.getElementById('schoolInput').value.trim() || DEFAULT_SCHOOL;
+            localStorage.setItem('word_teacher_name', teacherName);
+            localStorage.setItem('word_school_name', schoolName);
+            updateUIHeader();
+            closeSettings();
+        }
+
+        // Navigation Tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        /* =========================================================
+           GAME 1: Quiz "What is the Correct Table?"
+           ========================================================= */
+        const quizQuestions = [
+            {
+                q: "أين هو الجدول الذي يتكون من 3 أعمدة و 2 أسطر؟",
+                options: [
+                    { cols: 3, rows: 2, correct: true },
+                    { cols: 2, rows: 3, correct: false },
+                    { cols: 4, rows: 2, correct: false }
+                ]
+            },
+            {
+                q: "أي جدول يحتوي على 4 أعمدة و 3 أسطر؟",
+                options: [
+                    { cols: 3, rows: 4, correct: false },
+                    { cols: 4, rows: 3, correct: true },
+                    { cols: 2, rows: 2, correct: false }
+                ]
+            },
+            {
+                q: "اختر الجدول الذي يتكون من عمودين اثنين (2) و 4 أسطر:",
+                options: [
+                    { cols: 4, rows: 2, correct: false },
+                    { cols: 2, rows: 4, correct: true },
+                    { cols: 3, rows: 3, correct: false }
+                ]
+            }
+        ];
+
+        let currentQIndex = 0;
+
+        function renderQuizQuestion() {
+            const container = document.getElementById('quizContainer');
+            const item = quizQuestions[currentQIndex];
+            
+            let html = `<div class="q-card">
+                <div class="q-text">${item.q}</div>
+                <div class="options-grid">`;
+
+            item.options.forEach((opt, idx) => {
+                html += `<div class="option-card" onclick="checkQuizAnswer(this, ${opt.correct})">
+                    <p style="font-weight:bold; margin-bottom:8px;">الخيار (${idx + 1})</p>
+                    ${generateMiniTableHTML(opt.cols, opt.rows)}
+                </div>`;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function generateMiniTableHTML(cols, rows) {
+            let table = `<table class="mini-table">`;
+            for (let r = 0; r < rows; r++) {
+                table += `<tr>`;
+                for (let c = 0; c < cols; c++) {
+                    table += `<td>خلية</td>`;
+                }
+                table += `</tr>`;
+            }
+            table += `</table>`;
+            return table;
+        }
+
+        function checkQuizAnswer(cardEl, isCorrect) {
+            if (cardEl.parentNode.classList.contains('answered')) return;
+            cardEl.parentNode.classList.add('answered');
+
+            if (isCorrect) {
+                cardEl.classList.add('correct');
+                playSound('success');
+                addScore(10);
+            } else {
+                cardEl.classList.add('wrong');
+                playSound('wrong');
+            }
+        }
+
+        function nextQuizQuestion() {
+            currentQIndex = (currentQIndex + 1) % quizQuestions.length;
+            renderQuizQuestion();
+        }
+
+        renderQuizQuestion();
+
+        /* =========================================================
+           GAME 2: Insert Table Challenge
+           ========================================================= */
+        const tableTasks = [
+            { cols: 4, rows: 3, label: "أدرج جدولاً يتكون من 4 أعمدة و 3 أسطر." },
+            { cols: 5, rows: 2, label: "أدرج جدولاً يتكون من 5 أعمدة و 2 أسطر." },
+            { cols: 3, rows: 4, label: "أدرج جدولاً يتكون من 3 أعمدة و 4 أسطر." }
+        ];
+
+        let currentTaskIdx = 0;
+        let selectedCols = 1;
+        let selectedRows = 1;
+
+        function updateTask2Label() {
+            document.getElementById('game2Task').innerText = "المطلوب: " + tableTasks[currentTaskIdx].label;
+        }
+
+        function changeCols(val) {
+            selectedCols = Math.max(1, Math.min(8, selectedCols + val));
+            document.getElementById('colsVal').innerText = selectedCols;
+            renderPreviewTable();
+        }
+
+        function changeRows(val) {
+            selectedRows = Math.max(1, Math.min(8, selectedRows + val));
+            document.getElementById('rowsVal').innerText = selectedRows;
+            renderPreviewTable();
+        }
+
+        function renderPreviewTable() {
+            const tableEl = document.getElementById('previewTable');
+            let html = "";
+            for (let r = 0; r < selectedRows; r++) {
+                html += "<tr>";
+                for (let c = 0; c < selectedCols; c++) {
+                    html += "<td>خلية</td>";
+                }
+                html += "</tr>";
+            }
+            tableEl.innerHTML = html;
+        }
+
+        function checkTableTask() {
+            const target = tableTasks[currentTaskIdx];
+            if (selectedCols === target.cols && selectedRows === target.rows) {
+                playSound('success');
+                addScore(15);
+                alert("إجابة ممتازة وصحيحة! 👏");
+                currentTaskIdx = (currentTaskIdx + 1) % tableTasks.length;
+                updateTask2Label();
+            } else {
+                playSound('wrong');
+                alert("حاول مرة أخرى! تأكد من عدد الأعمدة والأسطر المطلوبة.");
+            }
+        }
+
+        updateTask2Label();
+        renderPreviewTable();
+
+        /* =========================================================
+           GAME 3: Resize Column & Row Master
+           ========================================================= */
+        const resizeTasks = [
+            { targetW: 100, targetH: 60, hint: "غَيّر عرض العمود إلى 100px وارتفاع السطر إلى 60px ليظهر النص بشكل مريح!" },
+            { targetW: 120, targetH: 80, hint: "غَيّر عرض العمود إلى 120px وارتفاع السطر إلى 80px." }
+        ];
+
+        let currentResizeTaskIdx = 0;
+
+        function updateResizeTaskLabel() {
+            document.getElementById('game3Task').innerText = "المطلوب: " + resizeTasks[currentResizeTaskIdx].hint;
+        }
+
+        function updateTableDimensions() {
+            const w = document.getElementById('colWidthInput').value;
+            const h = document.getElementById('rowHeightInput').value;
+
+            const cells = document.querySelectorAll('#resizableTable td');
+            cells.forEach(td => {
+                td.style.width = w + "px";
+                td.style.height = h + "px";
+            });
+        }
+
+        function checkResizeTask() {
+            const task = resizeTasks[currentResizeTaskIdx];
+            const currentW = parseInt(document.getElementById('colWidthInput').value);
+            const currentH = parseInt(document.getElementById('rowHeightInput').value);
+
+            if (currentW === task.targetW && currentH === task.targetH) {
+                playSound('success');
+                addScore(20);
+                alert("ممتاز! أتقنت طريقة ضبط أبعاد الخلايا في Word 📏✨");
+                currentResizeTaskIdx = (currentResizeTaskIdx + 1) % resizeTasks.length;
+                updateResizeTaskLabel();
+            } else {
+                playSound('wrong');
+                alert("الأبعاد غير مطابقة للمطلوب بعد، راجع القيم المكتوبة.");
+            }
+        }
+
+        updateResizeTaskLabel();
+        updateTableDimensions();
+    </script>
+</body>
+</html>
